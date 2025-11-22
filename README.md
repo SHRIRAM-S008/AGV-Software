@@ -1,75 +1,118 @@
-# Welcome to your Lovable project
+# 🚀 AGV Digital Twin Dashboard  
+A modern, interactive dashboard for managing Automated Guided Vehicles (AGVs) and visualizing warehouse automation workflows.  
+Built using **React + Vite + TypeScript**, enriched with 3D visualization, advanced animations, and a clean modular UI system.
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/78678044-b67e-4104-a09b-dc033b0fef49
+## 🌟 Features
 
-## How can I edit this code?
+### 🧭 Interactive Navigation  
+- Animated **Staggered Menu**
+- Floating “Menu +” trigger  
+- Glass-morphism fluid background  
+- Smooth transitions between pages  
 
-There are several ways of editing your application.
+### 🤖 AGV Dashboard  
+- Live AGV status and telemetry  
+- Battery %, position, speed  
+- Current job & task progress  
+- Alerts: collision avoidance, low battery  
 
-**Use Lovable**
+### 🎮 3D Digital Twin (React Three Fiber)  
+- Real-time 3D warehouse simulation  
+- AGV path movement & rack layout  
+- Zoom, orbit, pan camera controls  
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/78678044-b67e-4104-a09b-dc033b0fef49) and start prompting.
+### 📊 Analytics  
+Daily/Weekly/Monthly charts for:
+- Job count  
+- Collision risks avoided  
+- Distance traveled  
+- Energy usage  
+- Avg job time  
+- Inventory movement heatmap  
 
-Changes made via Lovable will be committed automatically to this repo.
+### ⚙️ System Settings  
+- Map editor *(optional)*  
+- Add/remove AGV  
+- Rack layout configuration  
+- User accounts  
+- Permission levels  
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### **Core**
+- React 18  
+- Vite  
+- TypeScript  
+- React Router v6  
 
-Follow these steps:
+### **UI**
+- TailwindCSS  
+- shadcn/ui  
+- Radix Primitives  
+- Glass-morphism UI  
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### **Animation**
+- Framer Motion  
+- GSAP  
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### **State & Data**
+- Zustand  
+- React Query  
+- Redux DevTools support  
 
-# Step 3: Install the necessary dependencies.
-npm i
+### **3D**
+- React Three Fiber  
+- Drei  
+- Three.js  
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+---
 
-**Edit a file directly in GitHub**
+## 📁 Folder Structure
+src/
+├── components/
+├── pages/
+├── hooks/
+├── store/
+├── lib/
+├── assets/
+├── layouts/
+├── styles/
+└── main.tsx
+🎯 Project Purpose
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+A dashboard designed to:
+	•	Demonstrate AGV automation workflow
+	•	Visualize warehouse operations
+	•	Provide real-time AGV controls
+	•	Show analytics & insights
+	•	Act as a portfolio-level engineering project
 
-**Use GitHub Codespaces**
+⸻
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+🔮 Future Enhancements
+	•	Multi-AGV path coordination
+	•	Real-time WebSocket data
+	•	Advanced path-planning UI
+	•	Mobile responsive control panel
+	•	AI anomaly detection
+  
+🤝 Contributing
 
-## What technologies are used for this project?
+Pull requests are welcome.
+Follow clean commit practices and coding style.
 
-This project is built with:
+📜 License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+MIT License.
 
-## How can I deploy this project?
+⸻
 
-Simply open [Lovable](https://lovable.dev/projects/78678044-b67e-4104-a09b-dc033b0fef49) and click on Share -> Publish.
+👨‍💻 Author
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-# AGV-Own
-# AGV-Software
+Shriram
+Computer Engineering • Web & Android Developer
+Focused on building industry-grade projects & aiming for Big Tech roles.
