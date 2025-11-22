@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from 'react';
-import { shallow } from 'zustand/shallow';
 import { Play, Pause, RotateCcw, Gauge } from 'lucide-react';
 
 import { useWarehouseStore } from '@/store/warehouseStore';
@@ -7,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const SPEED_PRESETS = [
@@ -25,17 +24,32 @@ const getSpeedDescriptor = (speed: number) => {
 };
 
 export const SimulationControls = () => {
-  const { isSimulationPlaying, simulationSpeed, setSimulationPlaying, setSimulationSpeed, resetSimulation } =
-    useWarehouseStore(
-      (state) => ({
-        isSimulationPlaying: state.isSimulationPlaying,
-        simulationSpeed: state.simulationSpeed,
-        setSimulationPlaying: state.setSimulationPlaying,
-        setSimulationSpeed: state.setSimulationSpeed,
-        resetSimulation: state.resetSimulation,
-      }),
-      shallow
-    );
+  const selectIsPlaying = useCallback(
+    (state: ReturnType<typeof useWarehouseStore.getState>) => state.isSimulationPlaying,
+    []
+  );
+  const selectSimulationSpeed = useCallback(
+    (state: ReturnType<typeof useWarehouseStore.getState>) => state.simulationSpeed,
+    []
+  );
+  const selectSetSimulationPlaying = useCallback(
+    (state: ReturnType<typeof useWarehouseStore.getState>) => state.setSimulationPlaying,
+    []
+  );
+  const selectSetSimulationSpeed = useCallback(
+    (state: ReturnType<typeof useWarehouseStore.getState>) => state.setSimulationSpeed,
+    []
+  );
+  const selectResetSimulation = useCallback(
+    (state: ReturnType<typeof useWarehouseStore.getState>) => state.resetSimulation,
+    []
+  );
+
+  const isSimulationPlaying = useWarehouseStore(selectIsPlaying);
+  const simulationSpeed = useWarehouseStore(selectSimulationSpeed);
+  const setSimulationPlaying = useWarehouseStore(selectSetSimulationPlaying);
+  const setSimulationSpeed = useWarehouseStore(selectSetSimulationSpeed);
+  const resetSimulation = useWarehouseStore(selectResetSimulation);
 
   const speedLabel = useMemo(() => `${Number(simulationSpeed.toFixed(2)).toString().replace(/\.0+$/, '')}×`, [simulationSpeed]);
   const speedDescriptor = useMemo(() => getSpeedDescriptor(simulationSpeed), [simulationSpeed]);
@@ -63,7 +77,7 @@ export const SimulationControls = () => {
             <span
               className={cn(
                 'h-2 w-2 rounded-full',
-                isSimulationPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-muted-foreground'
+                isSimulationPlaying ? 'bg-primary animate-pulse' : 'bg-muted-foreground'
               )}
             />
             {isSimulationPlaying ? 'Running' : 'Paused'}
@@ -90,19 +104,17 @@ export const SimulationControls = () => {
             )}
           </Button>
 
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="sm" onClick={resetSimulation} className="gap-2">
-                  <RotateCcw className="h-4 w-4" />
-                  Reset
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left" className="text-xs">
-                Clears active jobs and repositions AGVs
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={resetSimulation} className="gap-2">
+                <RotateCcw className="h-4 w-4" />
+                Reset
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="text-xs">
+              Clears active jobs and repositions AGVs
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="space-y-3">
@@ -116,21 +128,19 @@ export const SimulationControls = () => {
 
           <div className="flex flex-wrap gap-2">
             {SPEED_PRESETS.map((preset) => (
-              <TooltipProvider key={preset.value} delayDuration={120}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={Math.abs(simulationSpeed - preset.value) < 0.01 ? 'default' : 'outline'}
-                      size="xs"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => applySpeed(preset.value)}
-                    >
-                      {preset.label}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">{preset.hint}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip key={preset.value}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={Math.abs(simulationSpeed - preset.value) < 0.01 ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => applySpeed(preset.value)}
+                  >
+                    {preset.label}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">{preset.hint}</TooltipContent>
+              </Tooltip>
             ))}
           </div>
 

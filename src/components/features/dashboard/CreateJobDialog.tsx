@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { shallow } from 'zustand/shallow';
 import {
   Dialog,
   DialogContent,
@@ -18,9 +17,9 @@ import {
     SelectValue,
   } from '@/components/ui/select';
   import { Badge } from '@/components/ui/badge';
-  import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
   import { useToast } from '@/hooks/use-toast';
-  import { useWarehouseStore } from '@/store/warehouseStore';
+import { useWarehouseStore } from '@/store/warehouseStore';
   import { cn } from '@/lib/utils';
   import {
     AlertCircle,
@@ -42,6 +41,11 @@ type Priority = 'low' | 'medium' | 'high' | 'urgent';
 const MIN_COORD = 0;
 const MAX_COORD = 30;
 
+type WarehouseState = ReturnType<typeof useWarehouseStore.getState>;
+
+const selectAddJob = (state: WarehouseState) => state.addJob;
+const selectAgvs = (state: WarehouseState) => state.agvs;
+
 const LOCATION_PRESETS = [
   { label: 'Inbound Dock A', value: { x: 4, y: 6 } },
   { label: 'Inbound Dock B', value: { x: 8, y: 6 } },
@@ -57,7 +61,7 @@ const PRIORITY_COPY: Record<Priority, string> = {
   urgent: 'Critical dispatch · pre-empt other tasks',
 };
 
-const PRIORITY_BADGE: Record<Priority, string> = {
+const PRIORITY_BADGE: Record<Priority, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   low: 'secondary',
   medium: 'default',
   high: 'destructive',
@@ -66,13 +70,8 @@ const PRIORITY_BADGE: Record<Priority, string> = {
 
 export const CreateJobDialog = ({ open, onOpenChange }: CreateJobDialogProps) => {
   const { toast } = useToast();
-  const { addJob, agvs } = useWarehouseStore(
-    (state) => ({
-      addJob: state.addJob,
-      agvs: state.agvs,
-    }),
-    shallow
-  );
+  const addJob = useWarehouseStore(selectAddJob);
+  const agvs = useWarehouseStore(selectAgvs);
 
   const [formData, setFormData] = useState({
     itemName: '',
@@ -326,7 +325,7 @@ export const CreateJobDialog = ({ open, onOpenChange }: CreateJobDialogProps) =>
                     <Button
                       key={preset.label}
                       variant="ghost"
-                      size="xs"
+                      size="sm"
                       onClick={() => applyPreset('pickup', preset.value.x, preset.value.y)}
                       className="h-7 rounded-full border border-dashed border-border px-3 text-[11px]"
                     >
@@ -372,7 +371,7 @@ export const CreateJobDialog = ({ open, onOpenChange }: CreateJobDialogProps) =>
                     <Button
                       key={preset.label}
                       variant="ghost"
-                      size="xs"
+                      size="sm"
                       onClick={() => applyPreset('drop', preset.value.x, preset.value.y)}
                       className="h-7 rounded-full border border-dashed border-border px-3 text-[11px]"
                     >
@@ -395,23 +394,21 @@ export const CreateJobDialog = ({ open, onOpenChange }: CreateJobDialogProps) =>
                 <Users className="h-4 w-4 text-primary" />
                 Assignment
               </div>
-              <TooltipProvider delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="flex items-center gap-1 text-[11px]">
-                      <Sparkles className="h-3 w-3 text-primary" />
-                      {assignmentLabel}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    {formData.assignmentMode === 'manual'
-                      ? 'Manual mode overrides auto-selection.'
-                      : closestAgv
-                        ? `Closest AGV: ${closestAgv.agv.name} · ${closestAgv.distance}m away`
-                        : 'No active AGVs detected.'}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="flex items-center gap-1 text-[11px]">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    {assignmentLabel}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">
+                  {formData.assignmentMode === 'manual'
+                    ? 'Manual mode overrides auto-selection.'
+                    : closestAgv
+                      ? `Closest AGV: ${closestAgv.agv.name} · ${closestAgv.distance}m away`
+                      : 'No active AGVs detected.'}
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-[minmax(0,160px)_1fr]">

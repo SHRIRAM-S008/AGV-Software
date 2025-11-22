@@ -12,12 +12,6 @@ interface NavLinkCompatProps extends Omit<NavLinkProps, 'className'> {
   pendingClassName?: string;
 }
 
-/**
- * A thin wrapper over React Router's NavLink with Tailwind-friendly defaults.
- * - Accepts plain strings or resolver functions for className.
- * - Adds optional active/pending class overrides on top of base styles.
- * - Falls back to subtle yet informative defaults when not provided.
- */
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
   (
     {

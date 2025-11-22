@@ -13,6 +13,9 @@ import {
   CheckCircle2,
   Loader2,
   PauseCircle,
+  Activity,
+  Navigation,
+  XCircle,
 } from 'lucide-react';
 
 import { useWarehouseStore } from '@/store/warehouseStore';
@@ -24,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { CreateJobDialog } from './CreateJobDialog';
 import type { Job } from '@/types/agv';
@@ -36,7 +39,8 @@ const selectJobs = (state: ReturnType<typeof useWarehouseStore.getState>) => sta
 const selectAssignJob = (state: ReturnType<typeof useWarehouseStore.getState>) => state.assignJobToAGV;
 
 export const JobPanel = () => {
-  const jobs = useWarehouseStore(selectJobs, shallow);
+  const jobs = useWarehouseStore(selectJobs);
+  const agvs = useWarehouseStore(state => state.agvs);
   const assignJobToAGV = useWarehouseStore(selectAssignJob);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,24 +83,26 @@ export const JobPanel = () => {
 
   const handleAssign = useCallback(
     (jobId: string) => {
-      assignJobToAGV(jobId);
+      // For now, assign to first available AGV (this could be enhanced with AGV selection)
+      const availableAgvs = agvs.filter(agv => agv.status === 'idle');
+      if (availableAgvs.length > 0) {
+        assignJobToAGV(availableAgvs[0].id, jobId);
+      }
     },
-    [assignJobToAGV]
+    [assignJobToAGV, agvs]
   );
 
   return (
-    <Card className="flex h-full flex-col border-border bg-card/80 backdrop-blur">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+    <Card className="flex h-full flex-col border-[#333333] bg-[#000000] backdrop-blur">
+      <div className="flex items-center justify-between border-b border-[#333333] px-4 py-3">
         <div>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Job Queue
-          </h3>
-          <p className="text-xs text-muted-foreground/70">Manage tasks awaiting fulfillment</p>
+          <h3 className="text-sm font-semibold text-[#CCCCCC] uppercase tracking-wide">Job Queue</h3>
+          <p className="text-xs text-[#CCCCCC]/70">Active warehouse operations</p>
         </div>
-        <Button size="sm" onClick={() => setCreateDialogOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Job
-        </Button>
+        <Badge variant="outline" className="gap-2 text-xs border-[#333333] text-[#FFFFFF]">
+          <Activity className="h-3.5 w-3.5 text-[#FFFFFF]" />
+          Live Data
+        </Badge>
       </div>
 
       <Toolbar
@@ -110,17 +116,17 @@ export const JobPanel = () => {
         onSortChange={setSortOption}
       />
 
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2 text-[11px] text-muted-foreground">
-        <Badge variant="outline" className="gap-1 text-[11px]">
-          <Clock className="h-3 w-3 text-amber-400" />
+      <div className="flex items-center gap-2 border-b border-[#262a33] px-4 py-2 text-[11px] text-[#9ca3af]">
+        <Badge variant="outline" className="gap-1 text-[11px] border-[#4b5563] text-[#f5f5f5]">
+          <Clock className="h-3 w-3 text-[#9ca3af]" />
           {pendingCount} pending
         </Badge>
-        <Badge variant="outline" className="gap-1 text-[11px]">
-          <Loader2 className="h-3 w-3 text-sky-400" />
+        <Badge variant="outline" className="gap-1 text-[11px] border-[#4b5563] text-[#f5f5f5]">
+          <Loader2 className="h-3 w-3 text-[#f5f5f5]" />
           {activeCount} active
         </Badge>
-        <Badge variant="outline" className="gap-1 text-[11px]">
-          <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+        <Badge variant="outline" className="gap-1 text-[11px] border-[#4b5563] text-[#f5f5f5]">
+          <CheckCircle2 className="h-3 w-3 text-[#9ca3af]" />
           {completedCount} completed
         </Badge>
       </div>
@@ -162,14 +168,14 @@ const Toolbar = ({
   sortOption: 'priority' | 'createdAt' | 'status';
   onSortChange: (value: 'priority' | 'createdAt' | 'status') => void;
 }) => (
-  <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
+  <div className="flex flex-wrap items-center gap-3 border-b border-[#333333] px-4 py-3">
     <div className="relative flex-1 min-w-[160px]">
-      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+      <Search className="absolute left-3 top-3 h-4 w-4 text-[#666666]" />
       <Input
+        placeholder="Search jobs..."
         value={searchQuery}
-        onChange={(event) => onSearchChange(event.target.value)}
-        placeholder="Search jobs, SKUs, or AGVs..."
-        className="pl-9"
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="pl-9 bg-[#000000] border-[#333333] text-[#FFFFFF] placeholder-[#666666] focus:border-[#FFFFFF]"
       />
     </div>
 
@@ -177,13 +183,13 @@ const Toolbar = ({
       type="single"
       value={statusFilter}
       onValueChange={(value: StatusFilter) => value && onStatusChange(value)}
-      className="rounded-lg border border-border p-1"
+      className="rounded-lg border border-[#333333] p-1 bg-[#000000]"
     >
       {STATUS_FILTERS.map(({ value, label, icon: Icon }) => (
         <ToggleGroupItem
           key={value}
           value={value}
-          className="gap-2 px-3 py-2 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          className="gap-2 px-3 py-2 text-xs data-[state=on]:bg-[#FFFFFF] data-[state=on]:text-[#000000] text-[#CCCCCC] hover:bg-[#333333]"
         >
           <Icon className="h-3.5 w-3.5" />
           {label}
@@ -195,13 +201,13 @@ const Toolbar = ({
       type="single"
       value={priorityFilter}
       onValueChange={(value: PriorityFilter) => value && onPriorityChange(value)}
-      className="rounded-lg border border-border p-1"
+      className="rounded-lg border border-[#333333] p-1 bg-[#000000]"
     >
       {PRIORITY_FILTERS.map(({ value, label, tone }) => (
         <ToggleGroupItem
           key={value}
           value={value}
-          className={`px-3 py-2 text-xs data-[state=on]:text-white ${tone}`}
+          className={`px-3 py-2 text-xs data-[state=on]:bg-[#FFFFFF] data-[state=on]:text-[#000000] text-[#CCCCCC] hover:bg-[#333333]`}
         >
           {label}
         </ToggleGroupItem>
@@ -209,14 +215,14 @@ const Toolbar = ({
     </ToggleGroup>
 
     <Select value={sortOption} onValueChange={(value) => onSortChange(value as typeof sortOption)}>
-      <SelectTrigger className="w-[170px]">
-        <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+      <SelectTrigger className="w-[170px] bg-[#000000] border-[#333333] text-[#FFFFFF]">
+        <Filter className="mr-2 h-4 w-4 text-[#FFFFFF]" />
         <SelectValue placeholder="Sort jobs" />
       </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="priority">Priority (High → Low)</SelectItem>
-        <SelectItem value="createdAt">Newest First</SelectItem>
-        <SelectItem value="status">Status</SelectItem>
+      <SelectContent className="bg-[#000000] border-[#333333] text-[#FFFFFF]">
+        <SelectItem value="priority" className="text-[#FFFFFF] focus:bg-[#333333]">Priority First</SelectItem>
+        <SelectItem value="createdAt" className="text-[#FFFFFF] focus:bg-[#333333]">Newest First</SelectItem>
+        <SelectItem value="status" className="text-[#FFFFFF] focus:bg-[#333333]">By Status</SelectItem>
       </SelectContent>
     </Select>
   </div>
@@ -229,77 +235,88 @@ const JobCard = ({ job, onAssign }: { job: Job; onAssign: (jobId: string) => voi
   const canStart = job.status === 'pending';
 
   return (
-    <Card className="border-border bg-secondary/40 p-3 shadow-none transition hover:border-primary/60">
+    <Card className="border-[#333333] bg-[#000000] p-3 shadow-none transition hover:border-[#FFFFFF]">
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-xs text-primary">
+            <Badge variant="outline" className="font-mono text-xs text-[#FFFFFF] border-[#333333]">
               {job.id}
             </Badge>
-            <Badge variant={statusBadge.variant} className="text-[11px] uppercase">
+            <Badge variant={statusBadge.variant} className="text-[11px] uppercase bg-[#333333] text-[#FFFFFF] border-[#333333]">
               {statusBadge.label}
             </Badge>
             {job.createdAt && (
-              <TooltipProvider delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-[11px]">
-                      <Clock className="mr-1 h-3 w-3" />
-                      {timeAgo(job.createdAt)}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    Created {job.createdAt.toLocaleString()}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="text-[11px] border-[#333333] text-[#FFFFFF]">
+                    <Clock className="mr-1 h-3 w-3" />
+                    {timeAgo(job.createdAt)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs bg-[#000000] border-[#333333] text-[#FFFFFF]">
+                  Created {job.createdAt.toLocaleString()}
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
-          <h4 className="text-sm font-semibold text-foreground">{job.itemName}</h4>
-          <p className="text-xs text-muted-foreground">
-            Qty <span className="font-mono text-foreground">{job.quantity}</span>
+          <h4 className="text-sm font-semibold text-[#FFFFFF]">{job.itemName}</h4>
+          <p className="text-xs text-[#CCCCCC]">
+            Qty <span className="font-mono text-[#FFFFFF]">{job.quantity}</span>
           </p>
         </div>
-        <Badge variant={priorityBadge.variant} className="text-xs">
+        <Badge variant={priorityBadge.variant} className="text-xs bg-[#333333] text-[#FFFFFF] border-[#333333]">
           {priorityBadge.label}
         </Badge>
       </div>
 
-      <Separator className="my-3 bg-border/60" />
+      <Separator className="my-3 bg-[#333333]" />
 
       <div className="grid gap-2 text-xs sm:grid-cols-2">
         <Metric
-          icon={<Package className="h-3 w-3 text-sky-400" />}
+          icon={<Package className="h-3 w-3 text-[#CCCCCC]" />}
           label="Assigned AGV"
           value={job.assignedAgv ? job.assignedAgv : '—'}
         />
         <Metric
-          icon={<MapPin className="h-3 w-3 text-emerald-400" />}
+          icon={<MapPin className="h-3 w-3 text-[#CCCCCC]" />}
           label="Pick-up"
           value={`(${job.pickupLocation.x}, ${job.pickupLocation.y})`}
         />
         <Metric
-          icon={<MapPin className="h-3 w-3 rotate-180 text-rose-400" />}
+          icon={<MapPin className="h-3 w-3 rotate-180 text-[#CCCCCC]" />}
           label="Drop-off"
-          value={`(${job.dropoffLocation.x}, ${job.dropoffLocation.y})`}
+          value={`(${job.dropLocation.x}, ${job.dropLocation.y})`}
         />
         {job.startedAt && (
           <Metric
-            icon={<Loader2 className="h-3 w-3 animate-spin text-primary" />}
+            icon={<Loader2 className="h-3 w-3 animate-spin text-[#CCCCCC]" />}
             label="Started"
             value={timeAgo(job.startedAt)}
           />
         )}
       </div>
 
-      {job.completedAt && (
-        <div className="mt-2 rounded-md bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400">
-          Completed {timeAgo(job.completedAt)}
-        </div>
+      {canStart && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full gap-2 bg-[#000000] border-[#333333] text-[#FFFFFF] hover:bg-[#333333]"
+              onClick={() => onAssign(job.id)}
+            >
+              <Play className="h-3.5 w-3.5" />
+              Dispatch
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-[#000000] border-[#333333] text-[#FFFFFF]">
+            Assign to nearest available AGV
+          </TooltipContent>
+        </Tooltip>
       )}
 
       {job.status === 'failed' && job.assignedAgv && (
-        <div className="mt-2 flex items-center gap-2 rounded-md bg-rose-500/10 px-2 py-1 text-xs text-rose-400">
+        <div className="mt-2 flex items-center gap-2 rounded-md bg-[#333333] px-2 py-1 text-xs text-[#FFFFFF]">
           <AlertTriangle className="h-3 w-3" />
           Requires reassignment
         </div>
@@ -307,19 +324,24 @@ const JobCard = ({ job, onAssign }: { job: Job; onAssign: (jobId: string) => voi
 
       <div className="mt-3 flex flex-wrap gap-2">
         {canStart && (
-          <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={() => onAssign(job.id)}>
-            <Play className="h-3 w-3" />
-            Dispatch
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-xs text-[#FFFFFF] hover:bg-[#333333]"
+            onClick={() => onAssign(job.id)}
+          >
+            <RefreshCcw className="h-3 w-3" />
+            Reassign
           </Button>
         )}
         {job.status === 'in-progress' && (
-          <Badge variant="outline" className="gap-1 text-[11px]">
-            <Loader2 className="h-3 w-3 animate-spin text-sky-400" />
+          <Badge variant="outline" className="gap-1 text-[11px] border-[#4b5563] text-[#f5f5f5]">
+            <Loader2 className="h-3 w-3 animate-spin text-[#f5f5f5]" />
             In transit
           </Badge>
         )}
         {!canStart && job.status !== 'failed' && (
-          <Badge variant="secondary" className="gap-1 text-[11px]">
+          <Badge variant="secondary" className="gap-1 text-[11px] bg-[#262a33] text-[#9ca3af] border-[#4b5563]">
             <PauseCircle className="h-3 w-3" />
             Awaiting completion
           </Badge>
@@ -330,55 +352,45 @@ const JobCard = ({ job, onAssign }: { job: Job; onAssign: (jobId: string) => voi
 };
 
 /* ---------- Helper Components ---------- */
-const Metric = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => (
-  <div className="flex items-center justify-between gap-2 rounded-md bg-background/50 px-2 py-1">
-    <span className="flex items-center gap-1 text-muted-foreground">
-      {icon}
-      {label}
-    </span>
-    <span className="font-mono text-[11px] text-foreground">{value}</span>
-  </div>
-);
-
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => (
-  <Card className="border-dashed border-border bg-background/60 py-12 text-center">
-    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
-      <RefreshCcw className="h-5 w-5 text-muted-foreground" />
+  <Card className="flex flex-col items-center justify-center gap-4 border-dashed border-[#333333] bg-[#000000] py-12 text-center">
+    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#333333]">
+      <Package className="h-6 w-6 text-[#FFFFFF]" />
     </div>
-    <h4 className="mt-3 text-sm font-semibold text-foreground">No jobs to display</h4>
-    <p className="mx-auto mt-1 max-w-[220px] text-xs text-muted-foreground">
-      Change filters or create a new job to populate the queue.
-    </p>
-    <Button size="sm" variant="outline" className="mt-4" onClick={onCreate}>
-      <Plus className="mr-2 h-3 w-3" />
-      Create job
-    </Button>
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-[#FFFFFF]">No jobs found</h3>
+      <p className="mx-auto mt-1 max-w-[200px] text-xs text-[#CCCCCC]">
+        Create your first job to get started with the warehouse simulation.
+      </p>
+      <Button size="sm" onClick={onCreate} className="mt-4 bg-[#333333] text-[#FFFFFF] border-[#333333] hover:bg-[#FFFFFF] hover:text-[#000000]">
+        Create Job
+      </Button>
+    </div>
   </Card>
 );
 
-/* ---------- Utility Functions ---------- */
-const STATUS_FILTERS: Array<{ value: StatusFilter; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>> }> = [
-  { value: 'all', label: 'All', icon: RefreshCcw },
+const Metric = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+  <div className="flex items-center gap-2 rounded-md bg-[#000000] px-2 py-1">
+    <span className="text-[#CCCCCC]">{icon}</span>
+    <span className="text-[#CCCCCC]">{label}:</span>
+    <span className="font-mono text-[11px] text-[#FFFFFF]">{value}</span>
+  </div>
+);
+
+const STATUS_FILTERS: Array<{ value: StatusFilter; label: string; icon: React.ComponentType<any> }> = [
+  { value: 'all', label: 'Status', icon: Activity },
   { value: 'pending', label: 'Pending', icon: Clock },
-  { value: 'in-progress', label: 'Active', icon: Loader2 },
-  { value: 'completed', label: 'Done', icon: CheckCircle2 },
-  { value: 'failed', label: 'Failed', icon: AlertTriangle },
+  { value: 'in-progress', label: 'In Progress', icon: Navigation },
+  { value: 'completed', label: 'Completed', icon: CheckCircle2 },
+  { value: 'failed', label: 'Failed', icon: XCircle },
 ];
 
 const PRIORITY_FILTERS: Array<{ value: PriorityFilter; label: string; tone: string }> = [
-  { value: 'all', label: 'Priority', tone: 'data-[state=on]:bg-primary' },
-  { value: 'urgent', label: 'Urgent', tone: 'data-[state=on]:bg-red-500' },
-  { value: 'high', label: 'High', tone: 'data-[state=on]:bg-orange-500' },
-  { value: 'medium', label: 'Medium', tone: 'data-[state=on]:bg-amber-500' },
-  { value: 'low', label: 'Low', tone: 'data-[state=on]:bg-emerald-500' },
+  { value: 'all', label: 'Priority', tone: 'data-[state=on]:bg-[#262a33]' },
+  { value: 'urgent', label: 'Urgent', tone: 'data-[state=on]:bg-[#262a33]' },
+  { value: 'high', label: 'High', tone: 'data-[state=on]:bg-[#262a33]' },
+  { value: 'medium', label: 'Medium', tone: 'data-[state=on]:bg-[#262a33]' },
+  { value: 'low', label: 'Low', tone: 'data-[state=on]:bg-[#262a33]' },
 ];
 
 const STATUS_BADGES: Record<Job['status'], { variant: 'default' | 'secondary' | 'outline' | 'destructive'; label: string }> = {
@@ -411,7 +423,7 @@ const priorityWeight = (priority: Job['priority']) => {
 
 const statusWeight = (status: Job['status']) => {
   switch (status) {
-    case 'urgent':
+    case 'failed':
       return 0;
     case 'in-progress':
       return 1;
@@ -419,8 +431,6 @@ const statusWeight = (status: Job['status']) => {
       return 2;
     case 'completed':
       return 3;
-    case 'failed':
-      return 0;
     default:
       return 4;
   }

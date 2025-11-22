@@ -22,13 +22,28 @@ export interface Job {
 export interface AGV {
   id: string;
   name: string;
+  type: 'mini_agv' | 'pallet_agv' | 'trolley_agv';
+  model: string;
   position: Position;
-  status: 'idle' | 'moving' | 'charging' | 'error';
+  status: 'idle' | 'moving' | 'charging' | 'error' | 'paused' | 'manual' | 'locked';
+  operationalMode: 'auto' | 'manual' | 'charging' | 'locked';
   battery: number;
   speed: number;
+  heading: number;
   currentJob?: Job;
   path?: Position[];
   distanceTraveled: number;
+  temperature: number;
+  loadWeight: number;
+  isObstacleDetected: boolean;
+  nextWaypoint?: Position;
+  estimatedCompletionTime?: Date;
+  firmwareVersion: string;
+  lastServiceDate: Date;
+  batteryHealth: number;
+  motorHealth: number;
+  totalRunHours: number;
+  maintenanceNotes?: string;
 }
 
 export interface Obstacle {
@@ -74,12 +89,29 @@ export interface AnalyticsData {
   distanceTrend?: number;
 }
 
+export interface DashboardMetrics {
+  activeAGVs: number;
+  totalAGVs: number;
+  jobsPending: number;
+  jobsActive: number;
+  jobsCompleted: number;
+  systemHealth: 'good' | 'warning' | 'critical';
+  averageBatteryLevel: number;
+  totalDistanceTraveled: number;
+  totalJobs: number;
+  totalObstacles: number;
+  averageAGVUtilization: number;
+}
+
 export interface WarehouseState {
   agvs: AGV[];
   jobs: Job[];
   obstacles: Obstacle[];
   warehouseSize: { width: number; length: number; height: number };
   analytics: AnalyticsData | null;
+  dashboardMetrics: DashboardMetrics;
   isSimulationPlaying: boolean;
   simulationSpeed: number;
+  selectedAgvId: string | null;
+  viewMode: '2d' | '3d';
 }
