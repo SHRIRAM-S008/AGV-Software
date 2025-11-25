@@ -1,31 +1,19 @@
 import { useEffect } from "react";
+import { Link } from 'react-router-dom';
+import { Home, ArrowLeft, Search, HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { AuroraBackground } from '@/components/ui/aurora-background';
 
 const NotFound = () => {
-  const menuItems = [
-    { label: 'Home', ariaLabel: 'Go to home', link: '/' },
-    { label: 'Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: 'Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: 'Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: 'Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: 'Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: 'WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
-
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route");
   }, []);
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ height: '100vh', background: '#f8fafc' }}>
+    <>
+      <AuroraBackground showRadialGradient={true}>
+        <div style={{ height: '100vh', position: 'relative', zIndex: 10 }}>
       <div className="flex min-h-screen items-center justify-center bg-muted">
       <div className="text-center">
         <SplitText
@@ -52,7 +40,8 @@ const NotFound = () => {
       </div>
     </div>
     </div>
-    </TopMenu>
+      </AuroraBackground>
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ import { AGVModel } from "./AGVModel";
 import { ObstacleModel } from "./ObstacleModel";
 import { PathLine } from "./PathLine";
 import { Racks } from "./Racks";
+import { WarehouseModel } from "./WarehouseModel";
 import { WarehouseMap2D } from "./WarehouseMap2D";
 import type { AGV } from "@/types/agv";
 
@@ -18,7 +19,7 @@ const selectSimulationPlaying = (s: WarehouseState) => s.isSimulationPlaying;
 const selectSelectedAgvId = (s: WarehouseState) => s.selectedAgvId;
 const selectViewMode = (s: WarehouseState) => s.viewMode;
 
-export const WarehouseScene = () => {
+export const WarehouseScene = ({ show3DModel = true }: { show3DModel?: boolean }) => {
   const agvs = useWarehouseStore(selectAgvs);
   const obstacles = useWarehouseStore(selectObstacles);
   const warehouseSize = useWarehouseStore(selectWarehouseSize);
@@ -114,13 +115,26 @@ export const WarehouseScene = () => {
 
                 <SceneLighting />
 
-                <WarehouseShell size={warehouseSize} />
-                <IndustrialFloor size={warehouseSize} />
-                <CeilingTrusses size={warehouseSize} />
-                <HangingLightArray size={warehouseSize} />
-                <AmbientProps size={warehouseSize} />
+                {/* 3D Warehouse Model - only show when enabled */}
+                {show3DModel && (
+                  <WarehouseModel 
+                    position={[warehouseSize.width / 2, 0, warehouseSize.length / 2]}
+                    scale={[1, 1, 1]}
+                    rotation={[0, 0, 0]}
+                  />
+                )}
 
-                {/* Racks - place them before AGVs so they render under/behind */}
+                {/* Basic warehouse components when 3D model is disabled */}
+                {!show3DModel && (
+                  <>
+                    <WarehouseShell size={warehouseSize} />
+                    <IndustrialFloor size={warehouseSize} />
+                    <CeilingTrusses size={warehouseSize} />
+                    <HangingLightArray size={warehouseSize} />
+                    <AmbientProps size={warehouseSize} />
+                  </>
+                )}
+
                 <Racks warehouseSize={warehouseSize} />
 
                 <Grid

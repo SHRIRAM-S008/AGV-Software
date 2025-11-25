@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Activity, Zap, Battery, Wifi, WifiOff, AlertTriangle, 
-  Settings, Info, Package, Truck, Target, Clock, Thermometer,
-  Gauge, Cpu, HardDrive, Satellite, Radar, Map, Layers,
-  Play, Pause, RotateCcw, ZoomIn, ZoomOut, Maximize2,
-  ChevronRight, TrendingUp, TrendingDown, BarChart3,
-  RefreshCw, Download, Upload, Eye, EyeOff
+  Activity, Battery, Wifi, WifiOff, MapPin, Navigation, AlertTriangle, 
+  Settings, RefreshCw, Play, Pause, RotateCcw, Maximize2, Eye,
+  Layers, Box, Package, Truck, Zap, Target, Clock, ChevronRight,
+  Thermometer, Gauge, Radio, Cpu, Menu, BarChart3, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { TopMenu } from '@/components/layout/TopMenu';
 import SplitText from '@/components/common/SplitText';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const AGVDigitalTwin = () => {
   const [selectedAGV, setSelectedAGV] = useState(null);
@@ -91,23 +89,6 @@ const AGVDigitalTwin = () => {
       tasks: ['Pickup Zone B', 'Deliver Rack 7'],
       errors: []
     }
-  ];
-
-  const menuItems = [
-    { label: 'Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: 'Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: 'Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: 'Digital Twin', ariaLabel: 'AGV Digital Twin', link: '/agv-digital-twin' },
-    { label: 'Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: 'Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: 'WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' },
-    { label: 'Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
   ];
 
   const getStatusColor = (status) => {
@@ -243,16 +224,17 @@ const AGVDigitalTwin = () => {
   `;
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div className="digital-twin-container">
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="digital-twin-container">
         <style>{digitalTwinStyles}</style>
 
       {/* Header */}
       <div className="relative z-10 p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
+            <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
             <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl">
-              <Radar className="w-6 h-6 text-gray-900" />
+              <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
               <SplitText
@@ -515,8 +497,8 @@ const AGVDigitalTwin = () => {
           </div>
         </div>
       </div>
+        </div>
     </div>
-    </TopMenu>
   );
 };
 

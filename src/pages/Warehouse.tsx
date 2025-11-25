@@ -3,7 +3,7 @@ import {
   View, Box, Map, Navigation, Battery, Activity, AlertTriangle, 
   Layers, Play, Pause, RotateCcw, ZoomIn, ZoomOut, Maximize2,
   Settings, Info, Package, Truck, Zap, Target, Clock, ChevronRight,
-  Wifi, WifiOff, RefreshCw, Eye, EyeOff, Thermometer, Gauge
+  Wifi, WifiOff, RefreshCw, Eye, EyeOff, Thermometer, Gauge, Menu
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { realisticAGVFleet, positionStreamData } from '@/data/agvData';
@@ -11,7 +11,8 @@ import { realisticRacks, realisticInventoryData } from '@/data/wmsData';
 import { AGV, Position } from '@/types';
 import { WarehouseScene } from '@/components/features/warehouse/WarehouseScene';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { useSimulation } from '@/hooks/useSimulation';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 
 interface MapElement {
@@ -22,7 +23,11 @@ interface MapElement {
 }
 
 const Warehouse = () => {
+  // Enable simulation
+  useSimulation();
+  
   const [viewMode, setViewMode] = useState<'2d' | '3d' | 'replay'>('3d');
+  const [show3DModel, setShow3DModel] = useState(true);
   const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showPath, setShowPath] = useState(true);
@@ -37,24 +42,6 @@ const Warehouse = () => {
   const animationRef = useRef<number>();
 
   
-  
-  const menuItems = [
-    { label: '01. Home', ariaLabel: 'Go to home', link: '/' },
-    { label: '02. Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: '03. Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: '04. Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: '05. Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: '06. WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' },
-    { label: '07. Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
-
-
   // Generate map elements
   const mapElements: MapElement[] = [
     // AGVs
@@ -139,7 +126,7 @@ const Warehouse = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle canvas drawing for 2D view
+  // Simple AGV overlay for 2D view
   useEffect(() => {
     if (viewMode !== '2d' || !canvasRef.current) return;
 
@@ -148,180 +135,40 @@ const Warehouse = () => {
     if (!ctx) return;
 
     const draw = () => {
-      // Clear canvas
+      // Clear canvas for transparent overlay
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Apply zoom and pan
-      ctx.save();
-      ctx.translate(pan.x, pan.y);
-      ctx.scale(zoom, zoom);
-      
-      // Draw grid
-      if (showGrid) {
-        ctx.strokeStyle = '#1a1a1a';
-        ctx.lineWidth = 0.5;
-        for (let x = 0; x <= 50; x += 5) {
-          ctx.beginPath();
-          ctx.moveTo(x * 10, 0);
-          ctx.lineTo(x * 10, 250);
-          ctx.stroke();
-        }
-        for (let y = 0; y <= 25; y += 5) {
-          ctx.beginPath();
-          ctx.moveTo(0, y * 10);
-          ctx.lineTo(500, y * 10);
-          ctx.stroke();
-        }
-      }
-      
-      // Draw warehouse elements
+      // Draw AGVs only - scaled to screen
       mapElements.forEach(element => {
-        const x = element.position.x * 10;
-        const y = element.position.y * 10;
-        
-        switch (element.type) {
-          case 'rack':
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(x - 15, y - 10, 30, 20);
-            ctx.strokeStyle = '#6b7280';
-            ctx.strokeRect(x - 15, y - 10, 30, 20);
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '8px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(element.data.name, x, y + 2);
-            break;
-            
-          case 'agv':
-            const agv = element.data as AGV;
-            ctx.fillStyle = agv.status === 'error' ? '#ef4444' : 
-                           agv.status === 'charging' ? '#3b82f6' : 
-                           agv.status === 'moving' ? '#10b981' : '#6b7280';
-            ctx.beginPath();
-            ctx.arc(x, y, 6, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw direction indicator
-            if (agv.status === 'moving') {
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(x, y);
-              ctx.lineTo(
-                x + Math.cos(agv.heading * Math.PI / 180) * 8,
-                y + Math.sin(agv.heading * Math.PI / 180) * 8
-              );
-              ctx.stroke();
-            }
-            
-            // Draw AGV ID
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '6px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(agv.id, x, y + 1);
-            break;
-            
-          case 'charging_station':
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(x - 10, y - 10, 20, 20);
-            ctx.strokeStyle = '#f59e0b';
-            ctx.strokeRect(x - 10, y - 10, 20, 20);
-            ctx.fillStyle = '#92400e';
-            ctx.font = '8px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('⚡', x, y + 2);
-            break;
-            
-          case 'delivery_point':
-            ctx.fillStyle = '#8b5cf6';
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#7c3aed';
-            ctx.stroke();
-            break;
-            
-          case 'warning_zone':
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
-            ctx.beginPath();
-            ctx.arc(x, y, element.data.radius * 10, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            break;
+        if (element.type === 'agv') {
+          const agv = element.data as AGV;
+          const x = (element.position.x / 50) * canvas.width; // Scale to screen canvas
+          const y = (element.position.y / 25) * canvas.height;
+          
+          // AGV circle - optimized for screen view
+          ctx.fillStyle = agv.status === 'error' ? '#ef4444' : 
+                         agv.status === 'charging' ? '#3b82f6' : 
+                         agv.status === 'moving' ? '#10b981' : '#6b7280';
+          ctx.beginPath();
+          ctx.arc(x, y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // White border for visibility
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          // AGV ID
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(agv.id, x, y + 3);
         }
       });
-      
-      // Draw paths if enabled
-      if (showPath) {
-        realisticAGVFleet.forEach(agv => {
-          if (agv.path && agv.path.length > 1) {
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(agv.path[0].x * 10, agv.path[0].y * 10);
-            agv.path.forEach(point => {
-              ctx.lineTo(point.x * 10, point.y * 10);
-            });
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-        });
-      }
-      
-      // Draw waypoints if enabled
-      if (showWaypoints) {
-        realisticAGVFleet.forEach(agv => {
-          if (agv.nextWaypoint) {
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.arc(agv.nextWaypoint.x * 10, agv.nextWaypoint.y * 10, 3, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        });
-      }
-      
-      // Draw heatmap if enabled
-      if (showHeatmap) {
-        // Simple heatmap based on AGV density
-        const gridSize = 10;
-        const heatmap: number[][] = Array(6).fill(null).map(() => Array(6).fill(0));
-        
-        realisticAGVFleet.forEach(agv => {
-          const gridX = Math.floor(agv.position.x / gridSize);
-          const gridY = Math.floor(agv.position.y / gridSize);
-          if (gridX >= 0 && gridX < 5 && gridY >= 0 && gridY < 6) {
-            heatmap[gridY][gridX]++;
-          }
-        });
-        
-        heatmap.forEach((row, y) => {
-          row.forEach((value, x) => {
-            if (value > 0) {
-              const intensity = Math.min(value / 3, 1);
-              ctx.fillStyle = `rgba(239, 68, 68, ${intensity * 0.3})`;
-              ctx.fillRect(x * gridSize * 10, y * gridSize * 10, gridSize * 10, gridSize * 10);
-            }
-          });
-        });
-      }
-      
-      ctx.restore();
     };
 
-    const animate = () => {
-      draw();
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
-    
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [viewMode, zoom, pan, showGrid, showPath, showWaypoints, showHeatmap, mapElements]);
+    draw();
+  }, [viewMode, mapElements]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
@@ -370,11 +217,11 @@ const Warehouse = () => {
   };
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div className="h-screen bg-white flex flex-col">
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 flex-shrink-0">
         <div className="flex items-center space-x-4">
+          <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
           <div>
             <SplitText
               text="AGV Digital Twin"
@@ -440,6 +287,24 @@ const Warehouse = () => {
               Replay
             </button>
           </div>
+
+          {/* 3D Model Toggle - only show in 3D view */}
+          {viewMode === '3d' && (
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-600">3D Model:</span>
+              <button
+                onClick={() => setShow3DModel(!show3DModel)}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  show3DModel 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-300 text-gray-700'
+                }`}
+                title={show3DModel ? "Hide 3D Model" : "Show 3D Model"}
+              >
+                {show3DModel ? "ON" : "OFF"}
+              </button>
+            </div>
+          )}
 
           {/* View Controls */}
           <div className="flex items-center space-x-1">
@@ -533,16 +398,33 @@ const Warehouse = () => {
         {/* Visualization Area */}
         <div className="flex-1 relative bg-gray-50">
           {viewMode === '2d' ? (
-            <canvas
-              ref={canvasRef}
-              width={800}
-              height={400}
-              className="w-full h-full cursor-crosshair"
-              onClick={handleCanvasClick}
-            />
+            <div className="w-full h-full relative overflow-auto">
+              <div className="relative w-full h-full">
+                <img 
+                  src="/warehouse2d.jpg" 
+                  alt="Warehouse 2D Layout" 
+                  className="w-full h-full object-contain"
+                  style={{ 
+                    imageRendering: 'crisp-edges',
+                    objectFit: 'contain',
+                    height: '100%',
+                    width: 'auto'
+                  }}
+                />
+                {/* Overlay canvas for AGV positions and interactions */}
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={600}
+                  className="absolute inset-0 w-full h-full cursor-crosshair"
+                  style={{ pointerEvents: 'auto' }}
+                  onClick={handleCanvasClick}
+                />
+              </div>
+            </div>
           ) : viewMode === '3d' ? (
             <div className="w-full h-full">
-              <WarehouseScene />
+              <WarehouseScene show3DModel={show3DModel} />
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-600">
@@ -824,7 +706,6 @@ const Warehouse = () => {
         </div>
       </div>
     </div>
-    </TopMenu>
   );
 };
 

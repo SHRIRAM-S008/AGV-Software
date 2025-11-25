@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { 
   Package, Plus, Edit2, Trash2, Search, Filter, Download, AlertTriangle,
   MapPin, Clock, TrendingUp, Box, ArrowRight, ChevronRight, Eye,
-  Settings, RefreshCw, DownloadCloud, FileText, Database
+  Settings, RefreshCw, DownloadCloud, FileText, Database, Menu
 } from 'lucide-react';
 import { InventoryItem, Rack, Shelf, WarehouseSlot, WMSJob, WMSAlert, WMSCreateJobRequest } from '@/types';
 import { realisticInventoryData, realisticRacks } from '@/data/wmsData';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export const WMSManagement = () => {
   const [activeTab, setActiveTab] = useState<'explorer' | 'inventory' | 'jobs' | 'alerts'>('explorer');
@@ -21,22 +21,6 @@ export const WMSManagement = () => {
   // Use realistic data
   const mockRacks = realisticRacks;
   const mockInventory = realisticInventoryData;
-
-  const menuItems = [
-    { label: 'Home', ariaLabel: 'Go to home', link: '/' },
-    { label: 'Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: 'Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: 'Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: 'Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: 'Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: 'Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
 
   const mockJobs: WMSJob[] = [
     {
@@ -438,27 +422,20 @@ export const WMSManagement = () => {
   );
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ height: '100vh', background: '#f8fafc' }}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
+              <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
               <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
-                <SplitText
-                  text="Warehouse Management System"
-                  className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent"
-                  delay={40}
-                  duration={0.5}
-                  from={{ opacity: 0, y: 20 }}
-                  to={{ opacity: 1, y: 0 }}
-                  tag="h1"
-                />
+                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Warehouse Management System
+                </h1>
                 <p className="text-xs text-gray-500">Inventory & Rack Management</p>
               </div>
             </div>
@@ -480,7 +457,8 @@ export const WMSManagement = () => {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -545,9 +523,8 @@ export const WMSManagement = () => {
           {activeTab === 'jobs' && renderJobsList()}
           {activeTab === 'alerts' && renderAlerts()}
         </div>
+      </div>
       </main>
     </div>
-    </div>
-    </TopMenu>
   );
 };

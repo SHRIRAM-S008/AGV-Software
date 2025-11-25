@@ -3,12 +3,12 @@ import {
   Truck, Battery, Wifi, WifiOff, AlertTriangle, Play, Pause, Square,
   Navigation, MapPin, Activity, Settings, Zap, Target, Clock, TrendingUp,
   Wrench, BatteryCharging, StopCircle, Move, Radio, Thermometer,
-  Package, ChevronRight, Eye, Download, RefreshCw, Shield, Gauge
+  Package, ChevronRight, Eye, Download, RefreshCw, Shield, Gauge, Menu
 } from 'lucide-react';
 import { AGV, Position, Job } from '@/types';
 import { realisticAGVFleet, batteryTelemetry, maintenanceLogs, jobHistory, eventLogs } from '@/data/agvData';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export const AGVFleetManagement = () => {
   const [selectedAGV, setSelectedAGV] = useState<AGV | null>(null);
@@ -18,22 +18,6 @@ export const AGVFleetManagement = () => {
 
   // Use realistic AGV fleet data
   const mockAGVFleet = realisticAGVFleet;
-
-  const menuItems = [
-    { label: '01. Home', ariaLabel: 'Go to home', link: '/' },
-    { label: '02. Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: '03. Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: '04. Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: '05. Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: '06. WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' },
-    { label: '07. Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -553,14 +537,14 @@ export const AGVFleetManagement = () => {
   );
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ height: '100vh', background: '#f8fafc' }}>
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
+              <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
               <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl">
                 <Truck className="w-5 h-5 text-white" />
               </div>
@@ -620,6 +604,5 @@ export const AGVFleetManagement = () => {
       </main>
     </div>
     </div>
-    </TopMenu>
   );
 };

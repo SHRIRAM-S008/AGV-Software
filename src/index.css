@@ -108,14 +108,24 @@ All colors MUST be HSL.
     --shadow-focus: 0 0 0 3px hsla(195 92% 52% / 0.35);
 
     /* Sidebar */
-    --sidebar-background: 215 18% 24%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 195 92% 52%;
-    --sidebar-primary-foreground: 215 25% 12%;
-    --sidebar-accent: 260 85% 60%;
-    --sidebar-accent-foreground: 215 25% 12%;
-    --sidebar-border: 215 16% 35%;
-    --sidebar-ring: 195 92% 52%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -126,13 +136,13 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply m-0 min-h-screen bg-background text-foreground antialiased;
+    @apply m-0 h-screen bg-background text-foreground antialiased;
     font-family: "Montserrat", sans-serif;
     font-optical-sizing: auto;
   }
 
   #root {
-    @apply min-h-screen;
+    @apply h-screen;
     font-family: "Montserrat", sans-serif;
   }
 
@@ -145,5 +155,26 @@ All colors MUST be HSL.
   p, span, div, button, input, textarea, select {
     font-family: "Montserrat", sans-serif;
     font-optical-sizing: auto;
+  }
+
+  /* Ensure proper scrolling for full-screen layouts */
+  html, body {
+    height: 100%;
+  }
+
+  #root {
+    height: 100vh;
+  }
+}
+
+/* ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { realisticAGVFleet, positionStreamData } from '@/data/agvData';
 import { realisticInventoryData, realisticRacks } from '@/data/wmsData';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { AuroraBackground } from '@/components/ui/aurora-background';
 
 
 
@@ -27,22 +27,7 @@ interface MetricCard {
 const Analytics = () => {
   const [selectedChart, setSelectedChart] = useState<'jobs' | 'distance' | 'energy' | 'completion'>('jobs');
 
-  
-  const menuItems = [
-    { label: '01. Home', ariaLabel: 'Go to home', link: '/' },
-    { label: '02. Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: '03. Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: '04. Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: '05. Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: '06. WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' },
-    { label: '07. Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 
   // Generate mock analytics data based on time range
@@ -168,12 +153,10 @@ const Analytics = () => {
     return 'bg-blue-500';
   };
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ height: '100vh', background: '#ffffff' }}>
-      <div className="h-screen bg-white flex flex-col">
+    <>
+      <AuroraBackground showRadialGradient={true}>
+        <div className="h-full relative z-10 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 flex-shrink-0">
         <div className="flex items-center space-x-4">
@@ -425,9 +408,9 @@ const Analytics = () => {
           </div>
         </div>
       </div>
-    </div>
-    </div>
-    </TopMenu>
+      </div>
+      </AuroraBackground>
+    </>
   );
 };
 

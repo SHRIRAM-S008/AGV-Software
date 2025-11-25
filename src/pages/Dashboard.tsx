@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useWarehouseStore } from '@/store/warehouseStore';
+import { useSimulation } from '@/hooks/useSimulation';
 import { 
   Wifi, WifiOff, Bell, Settings, User, Activity, AlertTriangle, 
   Battery, Package, TrendingUp, CheckCircle, Truck, Clock,
   MapPin, Zap, AlertCircle, Navigation, Sparkles, Cpu, Radio,
-  ChevronRight
+  ChevronRight, Menu
 } from 'lucide-react';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export const Dashboard = () => {
   const [isConnected] = useState(true);
   const [selectedAGV, setSelectedAGV] = useState<string | null>(null);
+  
+  // Enable simulation
+  useSimulation();
   
   // Use live store data instead of mock data
   const agvs = useWarehouseStore(state => state.agvs);
@@ -20,22 +24,53 @@ export const Dashboard = () => {
   const isSimulationPlaying = useWarehouseStore(state => state.isSimulationPlaying);
   const setSimulationPlaying = useWarehouseStore(state => state.setSimulationPlaying);
   const assignJobToAGV = useWarehouseStore(state => state.assignJobToAGV);
-
-  const menuItems = [
-    { label: '01. Home', ariaLabel: 'Go to home', link: '/' },
-    { label: '02. Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: '03. Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: '04. Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: '05. Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: '06. WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' },
-    { label: '07. Settings', ariaLabel: 'System settings', link: '/settings' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
+  
+  // Initialize some sample jobs for demonstration
+  useEffect(() => {
+    const store = useWarehouseStore.getState();
+    
+    // Add sample jobs if none exist
+    if (store.jobs.length === 0) {
+      const job1 = {
+        itemName: 'iPhone 17 Pro',
+        quantity: 5,
+        priority: 'high' as const,
+        assignedAgv: '',
+        pickupLocation: { x: 10, y: 1, z: 0 },
+        dropLocation: { x: 0, y: 0, z: 0 },
+        estimatedTime: 300
+      };
+      
+      const job2 = {
+        itemName: 'RTX 4090 GPU',
+        quantity: 2,
+        priority: 'medium' as const,
+        assignedAgv: '',
+        pickupLocation: { x: 20, y: 25, z: 0 },
+        dropLocation: { x: 5, y: 5, z: 0 },
+        estimatedTime: 480
+      };
+      
+      store.addJob(job1);
+      store.addJob(job2);
+    }
+  }, []); // Remove dependency array to prevent infinite loop
+  
+  // Assign jobs to idle AGVs when simulation starts
+  useEffect(() => {
+    if (isSimulationPlaying && agvs.length > 0) {
+      const availableJobs = jobs.filter(job => job.status === 'pending');
+      const idleAGVs = agvs.filter(agv => agv.status === 'idle');
+      
+      if (availableJobs.length > 0 && idleAGVs.length > 0) {
+        // Assign first available job to first idle AGV
+        const job = availableJobs[0];
+        const agv = idleAGVs[0];
+        
+        assignJobToAGV(agv.id, job.id);
+      }
+    }
+  }, [isSimulationPlaying, agvs.length, jobs.length]); // More specific dependencies
   
   const [alerts, setAlerts] = useState([
     { id: 1, type: 'critical', message: 'AGV-3 Battery low (18%)', time: '10:25' },
@@ -106,13 +141,10 @@ export const Dashboard = () => {
 
   // Interactive controls
   const handleSimulationToggle = () => {
-    console.log('Simulation toggle clicked, current state:', isSimulationPlaying);
     setSimulationPlaying(!isSimulationPlaying);
-    console.log('New state set to:', !isSimulationPlaying);
   };
 
   const handleAssignJob = (agvId: string) => {
-    console.log('Assign job clicked for AGV:', agvId);
     // Create a sample job and assign it
     const sampleJob = {
       itemName: 'Sample Task',
@@ -125,10 +157,26 @@ export const Dashboard = () => {
     };
     
     // Add job to store and assign to AGV
-    const jobId = `job-${Date.now()}`;
-    useWarehouseStore.getState().addJob(sampleJob);
-    assignJobToAGV(agvId, jobId);
-    console.log('Job assigned:', jobId, 'to AGV:', agvId);
+    const store = useWarehouseStore.getState();
+    store.addJob(sampleJob);
+    assignJobToAGV(agvId, sampleJob.itemName);
+  };
+
+  const handleTestMovement = () => {
+    const store = useWarehouseStore.getState();
+    const firstAGV = store.agvs[0];
+    
+    if (firstAGV) {
+      // Create a simple path for the first AGV
+      const testPath = [
+        { x: firstAGV.position.x + 5, y: firstAGV.position.y, z: 0 },
+        { x: firstAGV.position.x + 10, y: firstAGV.position.y, z: 0 },
+        { x: firstAGV.position.x + 15, y: firstAGV.position.y, z: 0 }
+      ];
+      
+      store.updateAGVPath(firstAGV.id, testPath);
+      store.updateAGVStatus(firstAGV.id, 'moving');
+    }
   };
 
   const handleAGVClick = (agvId: string) => {
@@ -155,61 +203,32 @@ export const Dashboard = () => {
   };
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        {/* Animated Background Pattern */}
-        <div className="fixed inset-0 opacity-30">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgb(99 102 241 / 0.15) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-      
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Main Content */}
-      <div className="relative z-10">
-        {/* Modern Header */}
-        <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
+      <div className="h-full flex flex-col">
+        {/* Dashboard Content */}
+        <main className="flex-1 overflow-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-8">
+            {/* Page Title */}
+            <div className="mb-8">
               <div className="flex items-center space-x-3">
+                <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
                 <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
                   <Cpu className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900">
                     AGV Mission Control
                   </h1>
-                  <p className="text-xs text-gray-500">Real-time Fleet Management</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
-                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-                  <span className="text-xs font-medium text-green-700">{isConnected ? 'Connected' : 'Offline'}</span>
-                </div>
-                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200">
-                  <Bell className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200">
-                  <Settings className="w-5 h-5" />
-                </button>
-                <div className="flex items-center space-x-2 pl-3 pr-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">Operator</span>
+                  <p className="text-sm text-gray-500">Real-time Fleet Management</p>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-8">
+            
+            <div className="space-y-8">
             
             {/* 1. Top Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {summaryCards.map((card, index) => (
                 <div key={index} className={`group relative overflow-hidden rounded-2xl ${card.bgColor} border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
                   <div className="absolute inset-0 bg-gradient-to-r ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
@@ -229,7 +248,7 @@ export const Dashboard = () => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               
               {/* 2. Real-Time Warehouse Map & 3. AGV Fleet Table */}
               <div className="lg:col-span-2 space-y-8">
@@ -326,12 +345,11 @@ export const Dashboard = () => {
                         </button>
                         <button
                           onClick={() => {
-                            console.log('Test button clicked!');
-                            alert('Button clicked successfully!');
+                            handleTestMovement();
                           }}
                           className="px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
                         >
-                          Test Click
+                          Test Movement
                         </button>
                       </div>
                     </div>
@@ -541,9 +559,9 @@ export const Dashboard = () => {
             </div>
 
           </div>
+          </div>
         </main>
       </div>
     </div>
-    </TopMenu>
   );
 };

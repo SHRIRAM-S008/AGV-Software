@@ -7,7 +7,7 @@ const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "WMS", url: "/wms", icon: Package },
-  { title: "AGV Fleet", url: "/agv-fleet", icon: Truck },
+  { title: "AGV", url: "/agv-fleet", icon: Truck },
   { title: "Job Creation", url: "/job-creation", icon: Plus },
   { title: "Warehouse", url: "/warehouse", icon: Warehouse },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },

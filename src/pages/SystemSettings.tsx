@@ -1,17 +1,20 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Map, Truck, Package, Users, Shield, Save, Upload, Download,
-  Plus, Trash2, Edit2, Eye, EyeOff, Check, X, AlertTriangle, RefreshCw,
-  Grid, Square, Circle, Move, MousePointer, Layers, ZoomIn, ZoomOut,
-  RotateCcw, Maximize2, ChevronRight, User, Mail, Clock, Ban,
-  Unlock, Lock, Key, Database, Wifi, WifiOff, Battery, Copy, Clipboard,
-  Undo2, Redo2, Grid3x3, Ruler, Hand, Navigation2, BatteryCharging
+  Settings, Wifi, Battery, Zap, Shield, Bell, User, Database, 
+  Activity, AlertTriangle, CheckCircle, Info, RefreshCw, Download,
+  Upload, Save, X, Plus, Edit, Trash2, Eye, EyeOff, Lock, Unlock,
+  MapPin, Navigation, Clock, Calendar, TrendingUp, BarChart3, Undo, Redo, Truck,
+  Package, MousePointer, Hand, Square, Move, BatteryCharging, Copy, 
+  Grid3x3, Grid, Ruler, ZoomIn, ZoomOut, RotateCcw, Layers, Check, Map as MapIcon, Menu
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { AGV, Position } from '@/types';
 import SplitText from '@/components/common/SplitText';
-import { TopMenu } from '@/components/layout/TopMenu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 // Enhanced Types
 interface MapElement {
@@ -98,22 +101,6 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState<'map' | 'agv' | 'racks' | 'users' | 'permissions'>('map');
   const [selectedElements, setSelectedElements] = useState<Set<string>>(new Set());
   const [copiedElements, setCopiedElements] = useState<MapElement[]>([]);
-  
-  const menuItems = [
-    { label: 'Home', ariaLabel: 'Go to home', link: '/' },
-    { label: 'Dashboard', ariaLabel: 'Go to dashboard', link: '/dashboard' },
-    { label: 'Warehouse', ariaLabel: 'View warehouse map', link: '/warehouse' },
-    { label: 'Analytics', ariaLabel: 'View analytics and statistics', link: '/analytics' },
-    { label: 'Fleet Management', ariaLabel: 'Manage AGV fleet', link: '/agv-fleet' },
-    { label: 'Job Creation', ariaLabel: 'Create new jobs', link: '/job-creation' },
-    { label: 'WMS Management', ariaLabel: 'Warehouse management system', link: '/wms' }
-  ];
-
-  const socialItems = [
-    { label: 'GitHub', link: 'https://github.com' },
-    { label: 'LinkedIn', link: 'https://linkedin.com' },
-    { label: 'Twitter', link: 'https://twitter.com' }
-  ];
   
   // Enhanced Map Editor State
   const [mapElements, setMapElements] = useState<MapElement[]>([
@@ -317,10 +304,10 @@ const SystemSettings = () => {
   };
 
   const tabs = [
-    { id: 'map' as const, label: 'Map Editor', icon: <Map className="w-4 h-4" /> },
+    { id: 'map' as const, label: 'Map Editor', icon: <MapIcon className="w-4 h-4" /> },
     { id: 'agv' as const, label: 'AGV Fleet', icon: <Truck className="w-4 h-4" /> },
     { id: 'racks' as const, label: 'Rack Layout', icon: <Package className="w-4 h-4" /> },
-    { id: 'users' as const, label: 'User Accounts', icon: <Users className="w-4 h-4" /> },
+    { id: 'users' as const, label: 'User Accounts', icon: <User className="w-4 h-4" /> },
     { id: 'permissions' as const, label: 'Permissions', icon: <Shield className="w-4 h-4" /> }
   ];
 
@@ -606,13 +593,13 @@ const SystemSettings = () => {
   };
 
   return (
-    <TopMenu menuItems={menuItems} socialItems={socialItems}>
-      <div style={{ height: '100vh', background: '#f9fafb' }}>
+    <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            <SidebarTrigger className="p-3 bg-gray-900 text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700" />
             <Settings className="w-5 h-5 text-gray-700" />
             <div>
               <SplitText
@@ -719,14 +706,14 @@ const SystemSettings = () => {
                   className={`w-full p-2 rounded ${mapTool === 'pickup' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   title="Pickup"
                 >
-                  <Navigation2 className="w-4 h-4 mx-auto rotate-180" />
+                  <Navigation className="w-4 h-4 mx-auto rotate-180" />
                 </button>
                 <button
                   onClick={() => setMapTool('dropoff')}
                   className={`w-full p-2 rounded ${mapTool === 'dropoff' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   title="Dropoff"
                 >
-                  <Navigation2 className="w-4 h-4 mx-auto" />
+                  <Navigation className="w-4 h-4 mx-auto" />
                 </button>
                 <button
                   onClick={() => setMapTool('charging')}
@@ -743,7 +730,7 @@ const SystemSettings = () => {
                   title="Undo (Ctrl+Z)"
                   disabled={mapHistory.past.length === 0}
                 >
-                  <Undo2 className="w-4 h-4 mx-auto" />
+                  <Undo className="w-4 h-4 mx-auto" />
                 </button>
                 <button
                   onClick={redo}
@@ -751,7 +738,7 @@ const SystemSettings = () => {
                   title="Redo (Ctrl+Y)"
                   disabled={mapHistory.future.length === 0}
                 >
-                  <Redo2 className="w-4 h-4 mx-auto" />
+                  <Redo className="w-4 h-4 mx-auto" />
                 </button>
                 <button
                   onClick={copySelected}
@@ -765,7 +752,7 @@ const SystemSettings = () => {
                   className="w-full p-2 rounded text-gray-600 hover:bg-gray-100"
                   title="Paste (Ctrl+V)"
                 >
-                  <Clipboard className="w-4 h-4 mx-auto" />
+                  <Copy className="w-4 h-4 mx-auto" />
                 </button>
               </div>
               <div className="border-t border-gray-200 pt-2 space-y-2">
@@ -1315,7 +1302,6 @@ const SystemSettings = () => {
       </div>
     </div>
     </div>
-    </TopMenu>
   );
 };
 

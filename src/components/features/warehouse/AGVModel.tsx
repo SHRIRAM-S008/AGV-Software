@@ -19,6 +19,9 @@ const STATUS_COLORS: Record<AGV["status"], string> = {
   charging: "#f6c343",
   error: "#ff5a5f",
   idle: "#8e99a8",
+  paused: "#ffa500",
+  manual: "#4a90e2",
+  locked: "#9b59b6",
 };
 
 export const AGVModel = ({ agv, isSimulationPlaying, simulationSpeed }: AGVModelProps) => {
@@ -35,14 +38,50 @@ export const AGVModel = ({ agv, isSimulationPlaying, simulationSpeed }: AGVModel
   const simPlaying = isSimulationPlaying ?? storeSimulationPlaying;
   const simSpeed = simulationSpeed ?? storeSimulationSpeed;
 
-  // DISABLED: Stop updating targetPosition to prevent continuous movement
-// useEffect(() => {
-//   targetPosition.current.set(agv.position.x, 0.25, agv.position.y);
-// }, [agv.position]);
+  // Update target position when AGV position changes
+  useEffect(() => {
+    targetPosition.current.set(agv.position.x, 0.25, agv.position.y);
+  }, [agv.position]);
 
-  // COMPLETELY DISABLED: No animation at all
+  // Smooth animation when simulation is playing
   useFrame((_, delta) => {
-    return; // Exit immediately - no movement whatsoever
+    if (!meshRef.current || !simPlaying) return;
+
+    // Smooth movement towards target position
+    const currentPos = meshRef.current.position;
+    const target = targetPosition.current;
+    
+    // Interpolate position for smooth movement
+    currentPos.x += (target.x - currentPos.x) * Math.min(1, delta * 3);
+    currentPos.z += (target.z - currentPos.z) * Math.min(1, delta * 3);
+
+    // Rotate to face movement direction
+    if (agv.path && agv.path.length > 0) {
+      const nextWaypoint = agv.path[0];
+      const direction = new THREE.Vector3(
+        nextWaypoint.x - agv.position.x,
+        0,
+        nextWaypoint.y - agv.position.y
+      );
+      
+      if (direction.length() > 0.1) {
+        direction.normalize();
+        const targetRotation = Math.atan2(direction.x, direction.z);
+        meshRef.current.rotation.y = targetRotation;
+        lastDirection.current = direction;
+      }
+    } else if (lastDirection.current.length() > 0.1) {
+      // Maintain last known direction when stopped
+      const targetRotation = Math.atan2(lastDirection.current.x, lastDirection.current.z);
+      meshRef.current.rotation.y += (targetRotation - meshRef.current.rotation.y) * Math.min(1, delta * 2);
+    }
+
+    // Animate status light intensity
+    if (lightRef.current) {
+      const baseIntensity = agv.status === 'moving' ? 2.5 : 1.8;
+      const pulse = agv.status === 'moving' ? Math.sin(Date.now() * 0.003) * 0.3 + 1 : 1;
+      lightRef.current.intensity = baseIntensity * pulse;
+    }
   });
 
   const accentColor = useMemo(

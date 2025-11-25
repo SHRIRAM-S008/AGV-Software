@@ -28,32 +28,68 @@ const INITIAL_AGVS: AGV[] = [
   {
     id: 'AGV-1',
     name: 'AGV Alpha',
+    type: 'mini_agv',
+    model: 'Picker-X1',
     position: { x: 2, y: 2, z: 0 },
     status: 'idle',
+    operationalMode: 'auto',
     battery: 100,
     speed: 10,
+    heading: 0,
     path: [],
     distanceTraveled: 0,
+    temperature: 25,
+    loadWeight: 0,
+    isObstacleDetected: false,
+    firmwareVersion: 'v2.1.3',
+    lastServiceDate: new Date('2025-11-01'),
+    batteryHealth: 95,
+    motorHealth: 98,
+    totalRunHours: 500,
   },
   {
     id: 'AGV-2',
     name: 'AGV Beta',
+    type: 'mini_agv',
+    model: 'Picker-X1',
     position: { x: 28, y: 2, z: 0 },
     status: 'idle',
+    operationalMode: 'auto',
     battery: 95,
     speed: 10,
+    heading: 180,
     path: [],
     distanceTraveled: 0,
+    temperature: 27,
+    loadWeight: 0,
+    isObstacleDetected: false,
+    firmwareVersion: 'v2.1.3',
+    lastServiceDate: new Date('2025-11-01'),
+    batteryHealth: 92,
+    motorHealth: 96,
+    totalRunHours: 450,
   },
   {
     id: 'AGV-3',
     name: 'AGV Gamma',
+    type: 'mini_agv',
+    model: 'Picker-X1',
     position: { x: 15, y: 15, z: 0 },
     status: 'idle',
+    operationalMode: 'auto',
     battery: 85,
     speed: 10,
+    heading: 90,
     path: [],
     distanceTraveled: 0,
+    temperature: 30,
+    loadWeight: 0,
+    isObstacleDetected: false,
+    firmwareVersion: 'v2.1.3',
+    lastServiceDate: new Date('2025-11-01'),
+    batteryHealth: 88,
+    motorHealth: 94,
+    totalRunHours: 380,
   },
 ];
 
@@ -118,6 +154,7 @@ interface WarehouseStore {
   updateAGVPosition: (agvId: string, position: Position) => void;
   updateAGVStatus: (agvId: string, status: AGV['status']) => void;
   updateAGVBattery: (agvId: string, battery: number) => void;
+  updateAGVPath: (agvId: string, path: Position[]) => void;
   assignJobToAGV: (agvId: string, jobId: string) => void;
   completeJob: (jobId: string) => void;
   removeAGV: (agvId: string) => void;
@@ -195,6 +232,14 @@ export const useWarehouseStore = create<WarehouseStore>()(
         set((state) => ({
           agvs: state.agvs.map((agv) =>
             agv.id === agvId ? { ...agv, battery } : agv
+          ),
+        }));
+      },
+
+      updateAGVPath: (agvId, path) => {
+        set((state) => ({
+          agvs: state.agvs.map((agv) =>
+            agv.id === agvId ? { ...agv, path } : agv
           ),
         }));
       },
