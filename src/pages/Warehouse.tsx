@@ -14,7 +14,6 @@ import SplitText from '@/components/common/SplitText';
 import { useSimulation } from '@/hooks/useSimulation';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
-
 interface MapElement {
   id: string;
   type: 'agv' | 'rack' | 'charging_station' | 'delivery_point' | 'warning_zone';

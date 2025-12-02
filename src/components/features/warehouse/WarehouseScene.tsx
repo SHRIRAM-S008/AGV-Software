@@ -95,7 +95,7 @@ export const WarehouseScene = ({ show3DModel = true }: { show3DModel?: boolean }
               dpr={[1, 2]}
               frameloop="demand"
               onPointerMissed={handleSceneClick}
-              camera={{ position: [15, 25, 15], fov: 60, near: 0.1, far: 500 }}
+              camera={{ position: [25, 35, 20], fov: 50, near: 0.1, far: 500 }}
               gl={{ 
                 antialias: true,
                 toneMapping: THREE.ACESFilmicToneMapping,

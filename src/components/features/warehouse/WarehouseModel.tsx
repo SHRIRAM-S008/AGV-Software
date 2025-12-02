@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState, Suspense } from "react";
-import { useGLTF, useAnimations } from "@react-three/drei";
+import { useGLTF, useAnimations, OrbitControls, Environment, PerspectiveCamera, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { useFrame } from "@react-three/fiber";
 
 interface WarehouseModelProps {
   position?: [number, number, number];
@@ -17,26 +18,22 @@ const ModelContent = ({
   const modelRef = useRef<THREE.Group>(null);
   const [modelError, setModelError] = useState<string | null>(null);
   
-  // Always call hooks in the same order
   const { scene, animations } = useGLTF("/summa.glb");
   const { actions } = useAnimations(animations, modelRef);
 
   useEffect(() => {
     try {
       if (scene && modelRef.current) {
-        // Center the model and adjust scale if needed
         const box = new THREE.Box3().setFromObject(scene);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
-        
-        // You can adjust these values based on your model's scale
+
         const maxDimension = Math.max(size.x, size.y, size.z);
-        const desiredScale = 30 / maxDimension; // Scale to fit 30 units warehouse
+        const desiredScale = 30 / maxDimension; 
         
         scene.scale.multiplyScalar(desiredScale);
         scene.position.sub(center.multiplyScalar(desiredScale));
-        
-        // Apply additional transformations
+
         modelRef.current.position.set(...position);
         modelRef.current.rotation.set(...rotation);
         modelRef.current.scale.set(...scale);
@@ -90,9 +87,86 @@ export const WarehouseModel = (props: WarehouseModelProps) => {
   );
 };
 
-// Preload the model for better performance
+// Preload the model
 try {
   useGLTF.preload("/summa.glb");
 } catch (error) {
   console.warn("Could not preload 3D model:", error);
 }
+
+
+export const SceneSetup = ({
+  autoRotate = true,
+  rotateSpeed = 0.25,
+  followTarget = null
+}: {
+  autoRotate?: boolean;
+  rotateSpeed?: number;
+  followTarget?: THREE.Group | null;
+}) => {
+
+  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+
+  useFrame(() => {
+    if (autoRotate && !followTarget) {
+      const radius = 40;
+      const t = performance.now() * 0.0002 * rotateSpeed;
+
+      const x = Math.sin(t) * radius;
+      const z = Math.cos(t) * radius;
+
+      if (cameraRef.current) {
+        cameraRef.current.position.set(x, 20, z);
+        cameraRef.current.lookAt(0, 0, 0);
+      }
+    }
+
+    if (followTarget && cameraRef.current) {
+      const p = followTarget.position;
+      cameraRef.current.position.lerp(
+        new THREE.Vector3(p.x - 8, p.y + 6, p.z + 8),
+        0.05
+      );
+      cameraRef.current.lookAt(p);
+    }
+  });
+
+  return (
+    <>
+      {/* Auto Camera */}
+      <PerspectiveCamera makeDefault ref={cameraRef} fov={55} position={[25, 20, 25]} />
+
+      {/* Allow mouse control */}
+      {!followTarget && (
+        <OrbitControls 
+          enableZoom
+          enablePan
+          enableRotate
+          maxPolarAngle={Math.PI / 2}
+          minDistance={8}
+          maxDistance={80}
+        />
+      )}
+
+      {/* HDRI environment */}
+      <Environment files="/warehouse_env.hdr" background={false} />
+
+      {/* Lights */}
+      <hemisphereLight intensity={0.5} groundColor="#444" />
+      <directionalLight 
+        castShadow
+        position={[20, 30, 20]}
+        intensity={1.1}
+        shadow-mapSize={[2048, 2048]}
+      />
+
+      {/* Ground contact shadow */}
+      <ContactShadows 
+        position={[0, -0.001, 0]}
+        scale={80}
+        blur={2.5}
+        opacity={0.5}
+      />
+    </>
+  );
+};

@@ -18,8 +18,6 @@ const AGVDigitalTwin = () => {
   const [showMetrics, setShowMetrics] = useState(true);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
   const canvasRef = useRef(null);
-
-  // Mock AGV data for digital twin
   const mockAGVFleet = [
     {
       id: 'AGV-001',
